@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 
 import com.akatsu.main.Game;
 import com.akatsu.world.Camera;
+import com.akatsu.world.World;
 
 public class Player extends Entity{
 	
@@ -44,18 +45,18 @@ public class Player extends Entity{
 	
 	public void tick() {
 		moved = false;
-		if(right) {
+		if(right && World.place_free((int) (x + speed), (int) y)) {
 			moved = true;
 			x += speed;
-		} else if (left) {
+		} else if (left && World.place_free((int) (x - speed), (int) y)) {
 			moved = true;
 			x -= speed;
 		}
 		
-		if(up) {
+		if(up && World.place_free((int) x, (int) (y + speed))) {
 			moved = true;
 			y -= speed;
-		} else if (down) {
+		} else if (down && World.place_free((int) x, (int) (y - speed))) {
 			moved = true;
 			y += speed;
 		}
@@ -71,8 +72,8 @@ public class Player extends Entity{
 			}
 		}
 		
-		Camera.x = this.getX() - (Game.WIDTH / 2);
-		Camera.y = this.getY() - (Game.HEIGHT / 2);
+		Camera.x = Camera.clamp(this.getX() - (Game.WIDTH / 2), 0, World.WIDTH * 16 - Game.WIDTH);
+		Camera.y = Camera.clamp(this.getY() - (Game.HEIGHT / 2), 0, World.HEIGHT * 16 - Game.HEIGHT);
 		
 	}
 	

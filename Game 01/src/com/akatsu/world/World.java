@@ -15,8 +15,9 @@ import com.akatsu.main.Game;
 
 public class World {
 	
-	private Tile[] tiles;
+	public static Tile[] tiles;
 	public static int WIDTH, HEIGHT;
+	public static final int TILE_SIZE = 16;
 	
 	public World(String path) {
 		try {
@@ -34,7 +35,7 @@ public class World {
 							tiles[x + y * WIDTH] = new FloorTile(x * 16, y * 16, Tile.TILE_FLOOR);
 							break;
 						case 0xFFFFFFFF:
-							tiles[x + y * WIDTH] = new FloorTile(x * 16, y * 16, Tile.TILE_WALL);
+							tiles[x + y * WIDTH] = new WallTile(x * 16, y * 16, Tile.TILE_WALL);
 							break;
 						case 0xFF00fcff:
 							//player
@@ -67,15 +68,36 @@ public class World {
 		}
 	}
 	
+	public static boolean place_free(int xNext, int yNext) {
+		int x1 = xNext / TILE_SIZE;
+		int y1 = yNext / TILE_SIZE;
+		
+		int x2 = (xNext + TILE_SIZE - 1) / TILE_SIZE;
+		int y2 = yNext / TILE_SIZE;
+		
+		int x3 = xNext / TILE_SIZE;
+		int y3 = (yNext + TILE_SIZE - 1) / TILE_SIZE;
+		
+		int x4 = (xNext + TILE_SIZE - 1) / TILE_SIZE;
+		int y4 = (yNext + TILE_SIZE - 1) / TILE_SIZE;
+		
+		return !((tiles[x1 + (y1 * World.WIDTH)] instanceof WallTile) ||
+				 (tiles[x2 + (y2 * World.WIDTH)] instanceof WallTile) ||
+				 (tiles[x3 + (y3 * World.WIDTH)] instanceof WallTile) ||
+				 (tiles[x4 + (y4 * World.WIDTH)] instanceof WallTile));
+	}
+	
+	
 	public void render(Graphics g) {
-		int xStart = Camera.x / 16 ;
-		int yStart = Camera.y / 16;
+		int xStart = Camera.x >> 4 ;
+		int yStart = Camera.y >> 4;
 		
-		int xFinal = xStart + (Game.WIDTH / 16);
-		int yFinal = yStart + (Game.HEIGHT / 16);
+		int xFinal = xStart + (Game.WIDTH >> 4) + 1;
+		int yFinal = yStart + (Game.HEIGHT >> 4) + 1;
 		
-		for (int x = xStart; x < xFinal; x++) {
-			for (int y = yStart; y < yFinal; y++) {
+		for (int x = xStart; x <= xFinal; x++) {
+			for (int y = yStart; y <= yFinal; y++) {
+				if(x  < 0 || y < 0 || x >= WIDTH || y >= HEIGHT) continue;
 				Tile tile = tiles[x + (y * WIDTH)];
 				tile.render(g);
 			}
