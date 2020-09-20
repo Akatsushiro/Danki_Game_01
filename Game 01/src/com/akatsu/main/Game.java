@@ -3,22 +3,30 @@ package com.akatsu.main;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.JFrame;
 
+import com.akatsu.entities.Bullet;
+import com.akatsu.entities.Enemy;
 import com.akatsu.entities.Entity;
 import com.akatsu.entities.Player;
 import com.akatsu.graficos.Spritesheet;
+import com.akatsu.graficos.UI;
 import com.akatsu.world.World;
 
-public class Game extends Canvas implements Runnable, KeyListener {
+public class Game extends Canvas implements Runnable, KeyListener, MouseListener, MouseMotionListener {
 	
 	/**
 	 * 
@@ -32,17 +40,27 @@ public class Game extends Canvas implements Runnable, KeyListener {
 	private final int SCALE = 3;
 	private BufferedImage image;
 	public static List<Entity> entities;
+	public static List<Enemy> enemies;
+	public static List<Bullet> bullets;
 	public static Spritesheet spritesheet;
 	public static Player player;
-	public World world;
+	public static World world;
+	public static Random rand;
+	public UI ui;
 	
 	public Game() {
+		rand = new Random();
 		addKeyListener(this);
+		addMouseListener(this);
+		addMouseMotionListener(this);
 		setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		initFrame();
 		//Inicializando Objetos
+		ui = new UI();
 		image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 		entities = new ArrayList<Entity>();
+		enemies = new ArrayList<Enemy>();
+		bullets = new ArrayList<Bullet>();
 		spritesheet = new Spritesheet("/spritesheet.png");
 		player = new Player(0, 0, 16, 16, spritesheet.getSprite(0, 0, 16, 16));
 		entities.add(player);
@@ -83,6 +101,10 @@ public class Game extends Canvas implements Runnable, KeyListener {
 			Entity e = entities.get(i);
 			e.tick();
 		}
+		
+		for(int i = 0; i < bullets.size(); i ++) {
+			bullets.get(i).tick();
+		}
 	}
 	
 	public void render() {
@@ -104,9 +126,17 @@ public class Game extends Canvas implements Runnable, KeyListener {
 			e.render(g);
 		}
 		
+		for(int i = 0; i < bullets.size(); i ++) {
+			bullets.get(i).render(g);
+		}
+		
+		ui.render(g);
+		
 		g.dispose();
 		g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, WIDTH * SCALE, HEIGHT * SCALE, null);
+		g.setFont(new Font("arial", Font.BOLD, 20));
+		g.drawString("Ammo: " + player.ammo, 77, 62);
 		bs.show();
 	}
 	
@@ -116,8 +146,10 @@ public class Game extends Canvas implements Runnable, KeyListener {
 		double amountOfTicks = 60.0;
 		double ns = 1000000000 / amountOfTicks;
 		double delta = 0;
+		@SuppressWarnings("unused")
 		int frames = 0;
 		double timer = System.currentTimeMillis();
+		requestFocus();
 		while(isRunning) {
 			long now = System.nanoTime();
 			delta += (now - lastTime) / ns;
@@ -130,7 +162,6 @@ public class Game extends Canvas implements Runnable, KeyListener {
 			}
 			
 			if(System.currentTimeMillis() - timer >= 1000) {
-				System.out.println("FPS: " + frames);
 				frames = 0;
 				timer = System.currentTimeMillis();
 			}
@@ -164,6 +195,10 @@ public class Game extends Canvas implements Runnable, KeyListener {
 			//baixo
 			player.down = true;
 		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_NUMPAD5) {
+			player.shooting = true;
+		}
 	}
 
 	@Override
@@ -186,7 +221,55 @@ public class Game extends Canvas implements Runnable, KeyListener {
 				e.getKeyCode() == KeyEvent.VK_S){
 			//baixo
 			player.down = false;
-		}		
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_NUMPAD5) {
+			player.shooting = false;
+		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		player.mouseShooting = true;
+		player.mouse_X = e.getX() / 3;
+		player.mouse_Y = e.getY() / 3;
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		player.mouseShooting = false;	
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		// TODO Auto-generated method stub
+		player.mouseShooting = true;
+		player.mouse_X = e.getX() / 3;
+		player.mouse_Y = e.getY() / 3;
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

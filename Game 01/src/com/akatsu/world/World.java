@@ -57,7 +57,9 @@ public class World {
 							break;
 						case 0xFF7a0ea5:
 							//Enemy roxo
-							Game.entities.add(new Enemy(x * 16, y * 16, 16, 16, Entity.ENEMY));
+							Enemy enemy = new Enemy(x * 16, y * 16, 16, 16, Entity.ENEMY);
+							Game.entities.add(enemy);
+							Game.enemies.add(enemy);
 							break;
 					}
 				}
